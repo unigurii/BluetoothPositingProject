@@ -19,6 +19,7 @@ tag_id1 = '5464DEA3721B'
 tag_id2 = '5464DE2C20E4'
 tag_flag = 0
 tag_id_set = [tag_id1,tag_id2]
+temp_x,temp_y,temp_z = 0,0,0
 
 # 打开串口
 ser = serial.Serial(port, baud_rate, timeout=timeout)
@@ -97,7 +98,7 @@ def process_data(data):
     timestamp = parts[-1].strip('"')  # 时间戳
 
     # 计算三维坐标
-    distance = 100 * (1 - rssi / -90)  # 将RSSI映射到距离
+    #distance = 100 * (1 - rssi / -90)  # 将RSSI映射到距离
     distance = 100
     #print('the distance is :',distance)
 
@@ -105,7 +106,7 @@ def process_data(data):
     y = int(-distance * abs(np.cos(np.radians(elevation))) * np.sin(np.radians(azimuth)))
     x = int(-distance * np.sin(np.radians(elevation)))
 
-    return x, y, z, rssi, azimuth, elevation, tag_id, timestamp,1
+    return x, y, z, rssi, azimuth, elevation, tag_id, 1,1
     #else:return 0,0,0,0,0,0,0,0,0
 
 
@@ -125,7 +126,7 @@ def read_serial():
 
 # 更新图像的函数
 def update(frame):
-    global x, y, z,tag_flag #注意将全局变量做声明
+    global x, y, z,tag_flag,temp_x,temp_y,temp_z #注意将全局变量做声明
     scatter_set = []
     line_set = []
     text_set = []
@@ -137,14 +138,14 @@ def update(frame):
         tag_flag = tag_flag + 1
     else:tag_flag = 0
 
+        
+
+    
     points_dict_set[tag_id]['scatter']._offsets3d = ([x], [y], [z])
-    #points_dict_set[tag_id]['line'].set_data([0, x], [0, y])        
-    #points_dict_set[tag_id]['line'].set_3d_properties([0, z])
+    points_dict_set[tag_id]['line'].set_data([0, x], [0, y])        
+    points_dict_set[tag_id]['line'].set_3d_properties([0, z])
     points_dict_set[tag_id]['text'].set_text(f"RSSI: {rssi}\nAzimuth: {azimuth}°\nElevation: {elevation}°\nTag ID: {tag_id}")
     #print(tag_id)
-    # print('tag_id1',points_dict_set[tag_id1])
-    # print('tag_id2',points_dict_set[tag_id2])
-
     for tag_id_flag in tag_id_set:
         scatter_set.append(points_dict_set[tag_id_flag]['scatter'])
         line_set.append(points_dict_set[tag_id_flag]['line'])
